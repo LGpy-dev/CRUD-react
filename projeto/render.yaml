@@ -1,0 +1,26 @@
+services:
+  - name: crud-react-backend
+    type: web
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeployTrigger: commit
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SUPER_NAME
+        value: SUPER User
+      - key: SUPER_EMAIL
+        value: super@admin.com
+      - key: SUPER_PASSWORD
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
