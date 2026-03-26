@@ -6,7 +6,7 @@ const router = Router();
 
 // LISTAR: todos podem ver
 router.get('/', auth, permit('super', 'adm', 'user'), async (req, res) => {
-    const clients = (await Client.find()).toSorted({ createdAt: -1 });
+    const clients = await Client.find().sort({ createdAt: -1 });
     res.json(clients);
 });
 
