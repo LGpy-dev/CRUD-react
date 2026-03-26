@@ -9,9 +9,8 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 
 const roleOptions = [
-  { label: 'Super', value: 'super' },
   { label: 'Administrador', value: 'adm' },
-  { label: 'Usuário', value: 'user' }
+  { label: 'Usuario', value: 'user' }
 ];
 
 const emptyForm = {
@@ -81,8 +80,8 @@ export default function UsersPage() {
       <AppMenu />
 
       <div className="page-header">
-        <h2>Usuários</h2>
-        <Button label="Novo usuário" icon="pi pi-plus" onClick={newItem} />
+        <h2>Usuarios</h2>
+        <Button label="Novo usuario" icon="pi pi-plus" onClick={newItem} />
       </div>
 
       <DataTable value={items} paginator rows={10} stripedRows>
@@ -90,7 +89,7 @@ export default function UsersPage() {
         <Column field="email" header="E-mail" />
         <Column field="role" header="Perfil" />
         <Column
-          header="Ações"
+          header="Acoes"
           body={(row) => (
             <div className="row-actions">
               <Button icon="pi pi-pencil" text onClick={() => editItem(row)} />
@@ -100,7 +99,7 @@ export default function UsersPage() {
         />
       </DataTable>
 
-      <Dialog header="Usuário" visible={open} style={{ width: '30rem' }} onHide={() => setOpen(false)}>
+      <Dialog header="Usuario" visible={open} style={{ width: '30rem' }} onHide={() => setOpen(false)}>
         <div className="form-col">
           <label>Nome</label>
           <InputText value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
