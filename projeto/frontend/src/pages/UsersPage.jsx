@@ -7,6 +7,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
+import { useAuth } from '../context/AuthContext';
 
 const roleOptions = [
   { label: 'Administrador', value: 'adm' },
@@ -22,6 +23,8 @@ const emptyForm = {
 };
 
 export default function UsersPage() {
+  const { user } = useAuth();
+  const canManage = user?.role !== 'user';
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -81,45 +84,49 @@ export default function UsersPage() {
 
       <div className="page-header">
         <h2>Usuarios</h2>
-        <Button label="Novo usuario" icon="pi pi-plus" onClick={newItem} />
+        {canManage && <Button label="Novo usuario" icon="pi pi-plus" onClick={newItem} />}
       </div>
 
       <DataTable value={items} paginator rows={10} stripedRows>
         <Column field="name" header="Nome" />
         <Column field="email" header="E-mail" />
         <Column field="role" header="Perfil" />
-        <Column
-          header="Acoes"
-          body={(row) => (
-            <div className="row-actions">
-              <Button icon="pi pi-pencil" text onClick={() => editItem(row)} />
-              <Button icon="pi pi-trash" text severity="danger" onClick={() => removeItem(row)} />
-            </div>
-          )}
-        />
+        {canManage && (
+          <Column
+            header="Acoes"
+            body={(row) => (
+              <div className="row-actions">
+                <Button icon="pi pi-pencil" text onClick={() => editItem(row)} />
+                <Button icon="pi pi-trash" text severity="danger" onClick={() => removeItem(row)} />
+              </div>
+            )}
+          />
+        )}
       </DataTable>
 
-      <Dialog header="Usuario" visible={open} style={{ width: '30rem' }} onHide={() => setOpen(false)}>
-        <div className="form-col">
-          <label>Nome</label>
-          <InputText value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+      {canManage && (
+        <Dialog header="Usuario" visible={open} style={{ width: '30rem' }} onHide={() => setOpen(false)}>
+          <div className="form-col">
+            <label>Nome</label>
+            <InputText value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
 
-          <label>E-mail</label>
-          <InputText value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <label>E-mail</label>
+            <InputText value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
 
-          <label>Senha</label>
-          <InputText value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <label>Senha</label>
+            <InputText value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
 
-          <label>Perfil</label>
-          <Dropdown
-            value={form.role}
-            options={roleOptions}
-            onChange={(e) => setForm({ ...form, role: e.value })}
-          />
+            <label>Perfil</label>
+            <Dropdown
+              value={form.role}
+              options={roleOptions}
+              onChange={(e) => setForm({ ...form, role: e.value })}
+            />
 
-          <Button label="Salvar" onClick={save} />
-        </div>
-      </Dialog>
+            <Button label="Salvar" onClick={save} />
+          </div>
+        </Dialog>
+      )}
     </div>
   );
 }
