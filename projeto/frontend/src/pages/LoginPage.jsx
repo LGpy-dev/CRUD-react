@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { Password } from 'primereact/password';
+import { Toast } from 'primereact/toast';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const toast = useRef(null);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -18,23 +20,56 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (error) {
-      alert(error.message);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Falha no login',
+        detail: error.message,
+        life: 3000
+      });
     }
   }
 
   return (
     <div className="center-screen">
-      <Card title="Login do Sistema">
-        <form onSubmit={handleSubmit} className="form-col">
-          <label>E-mail</label>
-          <InputText value={email} onChange={(e) => setEmail(e.target.value)} />
+      <Toast ref={toast} position="top-right" />
+      <section className="login-card login-card-compact">
+        <Card title="Login do Sistema">
+          <p className="login-subtitle">
+            Entre com suas credenciais para acessar o painel administrativo.
+          </p>
 
-          <label>Senha</label>
-          <Password value={password} onChange={(e) => setPassword(e.target.value)} feedback={false} />
+          <form onSubmit={handleSubmit} className="form-col">
+            <label>E-mail</label>
+            <InputText
+              type="email"
+              placeholder="exemplo@empresa.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value.toLowerCase())}
+            />
 
-          <Button type="submit" label="Entrar" icon="pi pi-sign-in" />
-        </form>
-      </Card>
+            <label>Senha</label>
+            <div className="password-field">
+              <InputText
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Digite sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="password-field-input"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((current) => !current)}
+                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              >
+                <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'}`} />
+              </button>
+            </div>
+
+            <Button type="submit" label="Entrar" icon="pi pi-sign-in" />
+          </form>
+        </Card>
+      </section>
     </div>
   );
 }

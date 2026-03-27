@@ -14,18 +14,38 @@ export default function DashboardPage() {
     <div className="page">
       <AppMenu />
 
-      <div className="grid-cards">
-        <Card title="Usuários">
-          <h2>{stats.users}</h2>
-        </Card>
+      <div className="page-content">
+        <section className="stats-hero">
+          <h1>Dashboard</h1>
+          <p>
+            Visualize rapidamente os principais dados do sistema e acompanhe usuarios,
+            clientes e produtos em um unico painel.
+          </p>
+          <div className="hero-meta">
+            <span className="hero-pill">Resumo em tempo real</span>
+            <span className="hero-pill">Navegacao simples e objetiva</span>
+          </div>
+        </section>
 
-        <Card title="Clientes">
-          <h2>{stats.clients}</h2>
-        </Card>
+        <div className="grid-cards">
+          <div className="stat-card">
+            <Card title="Usuarios">
+              <h2 className="stat-value">{stats.users}</h2>
+            </Card>
+          </div>
 
-        <Card title="Produtos">
-          <h2>{stats.products}</h2>
-        </Card>
+          <div className="stat-card">
+            <Card title="Clientes">
+              <h2 className="stat-value">{stats.clients}</h2>
+            </Card>
+          </div>
+
+          <div className="stat-card">
+            <Card title="Produtos">
+              <h2 className="stat-value">{stats.products}</h2>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

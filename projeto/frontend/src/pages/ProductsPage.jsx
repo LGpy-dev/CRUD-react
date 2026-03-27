@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AppMenu from '../components/AppMenu';
 import { request } from '../services/api';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
+import { Toast } from 'primereact/toast';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
@@ -21,9 +23,12 @@ const emptyForm = {
 export default function ProductsPage() {
   const { user } = useAuth();
   const canManage = user?.role !== 'user';
+  const toast = useRef(null);
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   async function load() {
     const data = await request('/products');
@@ -42,6 +47,11 @@ export default function ProductsPage() {
   function editItem(row) {
     setForm(row);
     setOpen(true);
+  }
+
+  function viewItem(row) {
+    setSelectedItem(row);
+    setViewOpen(true);
   }
 
   async function save() {
@@ -66,41 +76,87 @@ export default function ProductsPage() {
     }
 
     setOpen(false);
-    load();
+    await load();
+    toast.current?.show({
+      severity: 'success',
+      summary: form._id ? 'Produto atualizado' : 'Produto criado',
+      detail: `${form.name} foi salvo com sucesso.`,
+      life: 2500
+    });
   }
 
   async function removeItem(row) {
-    if (!confirm(`Excluir ${row.name}?`)) return;
-    await request(`/products/${row._id}`, { method: 'DELETE' });
-    load();
+    confirmDialog({
+      message: `Deseja excluir ${row.name}?`,
+      header: 'Confirmar exclusão',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Excluir',
+      rejectLabel: 'Cancelar',
+      acceptClassName: 'p-button-danger',
+      accept: async () => {
+        await request(`/products/${row._id}`, { method: 'DELETE' });
+        await load();
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Produto removido',
+          detail: `${row.name} foi excluído com sucesso.`,
+          life: 2500
+        });
+      }
+    });
   }
 
   return (
     <div className="page">
+      <Toast ref={toast} position="top-right" />
+      <ConfirmDialog />
       <AppMenu />
 
-      <div className="page-header">
-        <h2>Produtos</h2>
-        {canManage && <Button label="Novo produto" icon="pi pi-plus" onClick={newItem} />}
-      </div>
+      <div className="page-content">
+        <div className="page-header">
+          <div className="page-title">
+            <h2>Produtos</h2>
+            <p>Acompanhe identificacao, preco e estoque em um painel mais limpo.</p>
+          </div>
+          {canManage && <Button label="Novo produto" icon="pi pi-plus" onClick={newItem} />}
+        </div>
 
-      <DataTable value={items} paginator rows={10} stripedRows>
-        <Column field="name" header="Nome" />
-        <Column field="id" header="ID" />
-        <Column field="price" header="Preco" />
-        <Column field="stock" header="Estoque" />
-        {canManage && (
+        <DataTable value={items} paginator rows={10} stripedRows className="data-shell">
+          <Column field="name" header="Nome" />
+          <Column header="ID" body={(row) => row.id || row._id} />
+          <Column field="price" header="Preco" />
+          <Column field="stock" header="Estoque" />
           <Column
-            header="Acoes"
+            header="Ações"
             body={(row) => (
               <div className="row-actions">
-                <Button icon="pi pi-pencil" text onClick={() => editItem(row)} />
-                <Button icon="pi pi-trash" text severity="danger" onClick={() => removeItem(row)} />
+                <Button icon="pi pi-eye" text label="Visualizar" className="action-button action-view" onClick={() => viewItem(row)} />
+                {canManage && <Button icon="pi pi-pencil" text label="Editar" className="action-button action-edit" onClick={() => editItem(row)} />}
+                {canManage && <Button icon="pi pi-trash" text severity="danger" label="Excluir" className="action-button action-delete" onClick={() => removeItem(row)} />}
               </div>
             )}
           />
-        )}
-      </DataTable>
+        </DataTable>
+      </div>
+
+      <Dialog header="Visualizar produto" visible={viewOpen} style={{ width: '30rem' }} onHide={() => setViewOpen(false)}>
+        <div className="form-col">
+          <label>Nome</label>
+          <InputText value={selectedItem?.name || ''} readOnly />
+
+          <label>ID</label>
+          <InputText value={selectedItem?.id || selectedItem?._id || ''} readOnly />
+
+          <label>Descricao</label>
+          <InputText value={selectedItem?.description || ''} readOnly />
+
+          <label>Preco</label>
+          <InputText value={String(selectedItem?.price ?? '')} readOnly />
+
+          <label>Estoque</label>
+          <InputText value={String(selectedItem?.stock ?? '')} readOnly />
+        </div>
+      </Dialog>
 
       {canManage && (
         <Dialog header="Produto" visible={open} style={{ width: '30rem' }} onHide={() => setOpen(false)}>
